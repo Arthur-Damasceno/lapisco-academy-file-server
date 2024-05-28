@@ -1,0 +1,10 @@
+[package]
+name = "lapisco-academy-file-server"
+version = "0.1.0"
+authors = ["Arthur Damasceno <damascenoarthur653@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+axum = "0.7.5"
+tokio = { version = "1.37.0", features = ["rt-multi-thread", "macros"]}
+
