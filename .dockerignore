@@ -1,0 +1,7 @@
+/target
+/upload
+.env.example
+.git
+.gitignore
+*.db
+*.db-*

@@ -13,7 +13,7 @@ mod routers;
 
 use database::Database;
 
-const ADDR: &str = "localhost:3000";
+const ADDR: &str = "0.0.0.0:3000";
 type Result<T = (), E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
 
 #[tokio::main]

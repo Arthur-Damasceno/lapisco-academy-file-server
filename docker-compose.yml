@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    container_name: lafs
+    ports:
+      - 3000:3000
+    env_file:
+      - ./.env
+    volumes:
+      - files:/app/upload
+      - type: bind
+        source: ./local.db
+        target: /app/local.db
+
+volumes:
+  files:
