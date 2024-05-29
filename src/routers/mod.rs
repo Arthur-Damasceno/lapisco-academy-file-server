@@ -14,6 +14,6 @@ pub fn app(database: Database) -> Router {
     Router::new()
         .route("/", post(upload::handle))
         .layer(DefaultBodyLimit::max(BODY_LIMIT))
-        .route("/:name", get(download::handle))
+        .route("/:id", get(download::handle))
         .with_state(database)
 }

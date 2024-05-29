@@ -34,10 +34,7 @@ pub async fn handle(
     Err(StatusCode::BAD_REQUEST)
 }
 
-pub async fn save_attachment(
-    data: Bytes,
-    Attachment { id, extension }: &Attachment,
-) -> crate::Result {
+async fn save_attachment(data: Bytes, Attachment { id, extension }: &Attachment) -> crate::Result {
     let path = match extension {
         AttachmentExtension::Mp4 => format!("./upload/{id}.mp4"),
     };
