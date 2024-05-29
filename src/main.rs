@@ -1,6 +1,7 @@
-use axum::{routing::post, Router};
+use axum::{routing::get, Router};
 use tokio::net::TcpListener;
 
+mod download;
 mod upload;
 
 const ADDR: &str = "localhost:3000";
@@ -14,7 +15,7 @@ async fn main() {
 }
 
 async fn run_server() -> Result {
-    let app = Router::new().route("/", post(upload::handle));
+    let app = Router::new().route("/", get(download::handle).post(upload::handle));
     let listener = TcpListener::bind(ADDR).await?;
 
     println!("The server is listening on {ADDR}");

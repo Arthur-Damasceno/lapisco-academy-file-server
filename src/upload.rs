@@ -1,4 +1,4 @@
-use axum::{http::StatusCode, extract::Multipart};
+use axum::{extract::Multipart, http::StatusCode};
 use tokio::fs::write;
 
 pub async fn handle(mut multipart: Multipart) -> StatusCode {
