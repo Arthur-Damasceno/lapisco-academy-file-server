@@ -1,8 +1,10 @@
-use axum::Router;
-use std::error::Error;
+use axum::{routing::post, Router};
 use tokio::net::TcpListener;
 
+mod upload;
+
 const ADDR: &str = "localhost:3000";
+type Result<T = (), E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
 
 #[tokio::main]
 async fn main() {
@@ -11,8 +13,8 @@ async fn main() {
     }
 }
 
-async fn run_server() -> Result<(), Box<dyn Error>> {
-    let app = Router::new();
+async fn run_server() -> Result {
+    let app = Router::new().route("/", post(upload::handle));
     let listener = TcpListener::bind(ADDR).await?;
 
     println!("The server is listening on {ADDR}");
