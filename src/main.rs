@@ -1,18 +1,19 @@
-use axum::{
-    extract::DefaultBodyLimit,
-    routing::{get, post},
-    Router,
-};
+#[macro_use]
+extern crate nanoid;
+#[macro_use]
+extern crate serde;
+#[macro_use]
+extern crate serde_repr;
+
 use tokio::net::TcpListener;
 
 mod database;
-mod download;
-mod upload;
+mod models;
+mod routers;
 
 use database::Database;
 
 const ADDR: &str = "localhost:3000";
-const BODY_LIMIT: usize = 1024 * 1_000_000;
 type Result<T = (), E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
 
 #[tokio::main]
@@ -26,11 +27,7 @@ async fn main() -> Result {
 }
 
 async fn run_server(database: Database) -> Result {
-    let app = Router::new()
-        .route("/", post(upload::handle))
-        .layer(DefaultBodyLimit::max(BODY_LIMIT))
-        .route("/:name", get(download::handle))
-        .with_state(database);
+    let app = routers::app(database);
     let listener = TcpListener::bind(ADDR).await?;
 
     println!("The server is listening on {ADDR}");
