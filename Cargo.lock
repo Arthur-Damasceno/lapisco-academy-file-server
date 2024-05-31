@@ -657,6 +657,7 @@ dependencies = [
  "serde",
  "serde_repr",
  "sqlx",
+ "thiserror",
  "tokio",
  "tokio-util",
 ]

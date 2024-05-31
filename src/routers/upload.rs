@@ -8,38 +8,35 @@ use tokio::fs::write;
 
 use crate::{
     database::Database,
+    error::{Error, Result},
     models::{Attachment, AttachmentExtension},
 };
 
 pub async fn handle(
     State(db): State<Database>,
     mut multipart: Multipart,
-) -> Result<(StatusCode, Json<Attachment>), StatusCode> {
-    if let Ok(Some(field)) = multipart.next_field().await {
-        let attachment = Attachment::new(AttachmentExtension::Mp4);
+) -> Result<(StatusCode, Json<Attachment>)> {
+    let field = multipart
+        .next_field()
+        .await
+        .map_err(|_| Error::InvalidData)
+        .and_then(|field| field.ok_or_else(|| Error::InvalidData))?;
 
-        db.insert_attachment(&attachment)
-            .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let attachment = Attachment::new(AttachmentExtension::Mp4);
 
-        if let Ok(data) = field.bytes().await {
-            save_attachment(data, &attachment)
-                .await
-                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    db.insert_attachment(&attachment).await?;
 
-            return Ok((StatusCode::CREATED, Json(attachment)));
-        }
-    }
+    let data = field.bytes().await.map_err(|_| Error::InvalidData)?;
 
-    Err(StatusCode::BAD_REQUEST)
+    save_attachment(data, &attachment).await?;
+
+    Ok((StatusCode::CREATED, Json(attachment)))
 }
 
-async fn save_attachment(data: Bytes, Attachment { id, extension }: &Attachment) -> crate::Result {
+async fn save_attachment(data: Bytes, Attachment { id, extension }: &Attachment) -> Result {
     let path = match extension {
         AttachmentExtension::Mp4 => format!("./upload/{id}.mp4"),
     };
 
-    write(path, &data).await?;
-
-    Ok(())
+    write(path, &data).await.map_err(From::from)
 }

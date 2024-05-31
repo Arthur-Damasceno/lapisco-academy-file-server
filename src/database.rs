@@ -2,19 +2,19 @@ use std::sync::Arc;
 
 use sqlx::{query, SqlitePool};
 
-use crate::models::Attachment;
+use crate::{error::Result, models::Attachment};
 
 #[derive(Clone)]
 pub struct Database(Arc<SqlitePool>);
 
 impl Database {
-    pub async fn connect(url: &str) -> crate::Result<Self> {
+    pub async fn connect(url: &str) -> Result<Self> {
         let connection = SqlitePool::connect(url).await?;
 
         Ok(Self(connection.into()))
     }
 
-    pub async fn find_attachment_by_id(&self, id: &str) -> crate::Result<Option<Attachment>> {
+    pub async fn find_attachment_by_id(&self, id: &str) -> Result<Option<Attachment>> {
         let mut conn = self.0.acquire().await?;
 
         let attachment = query!("SELECT * FROM attachments WHERE id = ?;", id)
@@ -28,10 +28,7 @@ impl Database {
         Ok(attachment)
     }
 
-    pub async fn insert_attachment(
-        &self,
-        Attachment { id, extension }: &Attachment,
-    ) -> crate::Result {
+    pub async fn insert_attachment(&self, Attachment { id, extension }: &Attachment) -> Result {
         let mut conn = self.0.acquire().await?;
 
         let extension = *extension as u8;

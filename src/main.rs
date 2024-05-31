@@ -8,13 +8,12 @@ extern crate serde_repr;
 use tokio::net::TcpListener;
 
 mod database;
+mod error;
 mod models;
 mod routers;
 
 use database::Database;
-
-const ADDR: &str = "0.0.0.0:3000";
-type Result<T = (), E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
+use error::Result;
 
 #[tokio::main]
 async fn main() -> Result {
@@ -28,9 +27,11 @@ async fn main() -> Result {
 
 async fn run_server(database: Database) -> Result {
     let app = routers::app(database);
-    let listener = TcpListener::bind(ADDR).await?;
+    let listener = TcpListener::bind("0.0.0.0:3000").await?;
 
-    println!("The server is listening on {ADDR}");
+    if let Ok(addr) = listener.local_addr() {
+        println!("The server is listening on {addr}");
+    }
 
     axum::serve(listener, app).await?;
 
