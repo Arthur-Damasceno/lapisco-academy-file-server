@@ -1,6 +1,6 @@
 use axum::{
     body::Body,
-    extract::{Path, State},
+    extract::{Extension, Path},
     http::header::{CONTENT_DISPOSITION, CONTENT_TYPE},
     response::{IntoResponse, Response},
 };
@@ -12,7 +12,10 @@ use crate::{
     error::{Error, Result},
 };
 
-pub async fn handle(State(db): State<Database>, Path(id): Path<String>) -> Result<Response> {
+pub async fn handle(
+    Extension(db): Extension<Database>,
+    Path(id): Path<String>,
+) -> Result<Response> {
     let attachment = db.find_attachment_by_id(&id).await?;
 
     if let Some(attachment) = attachment {

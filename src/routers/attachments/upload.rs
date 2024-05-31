@@ -1,6 +1,6 @@
 use axum::{
     body::Bytes,
-    extract::{Multipart, State},
+    extract::{Extension, Multipart},
     http::StatusCode,
     response::Json,
 };
@@ -13,7 +13,7 @@ use crate::{
 };
 
 pub async fn handle(
-    State(db): State<Database>,
+    Extension(db): Extension<Database>,
     mut multipart: Multipart,
 ) -> Result<(StatusCode, Json<Attachment>)> {
     let field = multipart

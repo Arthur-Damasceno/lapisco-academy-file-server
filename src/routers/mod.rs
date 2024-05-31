@@ -1,19 +1,11 @@
-mod download;
-mod upload;
+mod attachments;
 
-use axum::{
-    extract::DefaultBodyLimit,
-    routing::{get, post, Router},
-};
+use axum::{Extension, Router};
 
 use crate::database::Database;
 
-const BODY_LIMIT: usize = 1024 * 1_000_000;
-
 pub fn app(database: Database) -> Router {
     Router::new()
-        .route("/", post(upload::handle))
-        .layer(DefaultBodyLimit::max(BODY_LIMIT))
-        .route("/:id", get(download::handle))
-        .with_state(database)
+        .nest("/attachments", attachments::router())
+        .layer(Extension(database))
 }

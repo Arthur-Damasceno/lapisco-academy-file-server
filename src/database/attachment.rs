@@ -1,19 +1,8 @@
-use std::sync::Arc;
+use sqlx::query;
 
-use sqlx::{query, SqlitePool};
-
-use crate::{error::Result, models::Attachment};
-
-#[derive(Clone)]
-pub struct Database(Arc<SqlitePool>);
+use crate::{database::Database, error::Result, models::Attachment};
 
 impl Database {
-    pub async fn connect(url: &str) -> Result<Self> {
-        let connection = SqlitePool::connect(url).await?;
-
-        Ok(Self(connection.into()))
-    }
-
     pub async fn find_attachment_by_id(&self, id: &str) -> Result<Option<Attachment>> {
         let mut conn = self.0.acquire().await?;
 
