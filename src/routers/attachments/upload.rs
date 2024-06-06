@@ -22,7 +22,11 @@ pub async fn handle(
         .map_err(|_| Error::InvalidData)
         .and_then(|field| field.ok_or_else(|| Error::InvalidData))?;
 
-    let attachment = Attachment::new(AttachmentExtension::Mp4);
+    let extension = field
+        .content_type()
+        .ok_or(Error::InvalidData)
+        .and_then(|content_type| AttachmentExtension::try_from(content_type))?;
+    let attachment = Attachment::new(extension);
 
     db.insert_attachment(&attachment).await?;
 
@@ -33,10 +37,9 @@ pub async fn handle(
     Ok((StatusCode::CREATED, Json(attachment)))
 }
 
-async fn save_attachment(data: Bytes, Attachment { id, extension }: &Attachment) -> Result {
-    let path = match extension {
-        AttachmentExtension::Mp4 => format!("./upload/{id}.mp4"),
-    };
+async fn save_attachment(data: Bytes, attachment: &Attachment) -> Result {
+    let mut path = attachment.filename();
+    path.insert_str(0, "./upload/");
 
     write(path, &data).await.map_err(From::from)
 }

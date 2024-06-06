@@ -38,7 +38,8 @@ pub async fn handle(
 }
 
 async fn read_attachment(filename: &str) -> Result<Body> {
-    let file = File::open(format!("./upload/{filename}")).await?;
+    let path = format!("./upload/{filename}");
+    let file = File::open(path).await?;
     let body = Body::from_stream(ReaderStream::new(file));
 
     Ok(body)
