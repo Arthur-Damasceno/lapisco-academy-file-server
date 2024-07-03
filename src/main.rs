@@ -2,8 +2,6 @@
 extern crate nanoid;
 #[macro_use]
 extern crate serde;
-#[macro_use]
-extern crate serde_repr;
 
 use tokio::net::TcpListener;
 

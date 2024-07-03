@@ -11,20 +11,28 @@ impl Database {
             .await?
             .map(|rec| Attachment {
                 id: rec.id,
-                extension: rec.extension.into(),
+                filename: rec.filename,
+                content_type: rec.content_type,
             });
 
         Ok(attachment)
     }
 
-    pub async fn insert_attachment(&self, Attachment { id, extension }: &Attachment) -> Result {
+    pub async fn insert_attachment(
+        &self,
+        Attachment {
+            id,
+            filename,
+            content_type,
+        }: &Attachment,
+    ) -> Result {
         let mut conn = self.0.acquire().await?;
 
-        let extension = *extension as u8;
         query!(
-            "INSERT INTO attachments (id, extension) VALUES (?, ?);",
+            "INSERT INTO attachments (id, filename, content_type) VALUES (?, ?, ?);",
             id,
-            extension
+            filename,
+            content_type
         )
         .execute(&mut *conn)
         .await?;

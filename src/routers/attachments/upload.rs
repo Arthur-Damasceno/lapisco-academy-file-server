@@ -9,7 +9,7 @@ use tokio::fs::write;
 use crate::{
     database::Database,
     error::{Error, Result},
-    models::{Attachment, AttachmentExtension},
+    models::Attachment,
 };
 
 pub async fn handle(
@@ -20,26 +20,24 @@ pub async fn handle(
         .next_field()
         .await
         .map_err(|_| Error::InvalidData)
-        .and_then(|field| field.ok_or_else(|| Error::InvalidData))?;
+        .and_then(|field| field.ok_or(Error::InvalidData))?;
 
-    let extension = field
-        .content_type()
-        .ok_or(Error::InvalidData)
-        .and_then(|content_type| AttachmentExtension::try_from(content_type))?;
-    let attachment = Attachment::new(extension);
+    let filename = field.file_name().ok_or(Error::InvalidData)?.into();
+    let content_type = field.content_type().ok_or(Error::InvalidData)?.into();
+
+    let attachment = Attachment::new(filename, content_type);
 
     db.insert_attachment(&attachment).await?;
 
     let data = field.bytes().await.map_err(|_| Error::InvalidData)?;
 
-    save_attachment(data, &attachment).await?;
+    save_attachment(&attachment, data).await?;
 
     Ok((StatusCode::CREATED, Json(attachment)))
 }
 
-async fn save_attachment(data: Bytes, attachment: &Attachment) -> Result {
-    let mut path = attachment.filename();
-    path.insert_str(0, "./upload/");
+async fn save_attachment(Attachment { id, .. }: &Attachment, data: Bytes) -> Result {
+    let path = format!("./upload/{id}");
 
     write(path, &data).await.map_err(From::from)
 }

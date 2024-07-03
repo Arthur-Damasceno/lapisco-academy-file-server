@@ -4,12 +4,12 @@ use axum::{
     http::header::{CONTENT_DISPOSITION, CONTENT_TYPE},
     response::{IntoResponse, Response},
 };
-use tokio::fs::File;
-use tokio_util::io::ReaderStream;
+use {tokio::fs::File, tokio_util::io::ReaderStream};
 
 use crate::{
     database::Database,
     error::{Error, Result},
+    models::Attachment,
 };
 
 pub async fn handle(
@@ -18,18 +18,21 @@ pub async fn handle(
 ) -> Result<Response> {
     let attachment = db.find_attachment_by_id(&id).await?;
 
-    if let Some(attachment) = attachment {
-        let filename = attachment.filename();
-
+    if let Some(Attachment {
+        id,
+        filename,
+        content_type,
+    }) = attachment
+    {
         let headers = [
-            (CONTENT_TYPE, attachment.extension.content_type().into()),
+            (CONTENT_TYPE, content_type),
             (
                 CONTENT_DISPOSITION,
                 format!("attachment; filename=\"{filename}\""),
             ),
         ];
 
-        let body = read_attachment(&filename).await?;
+        let body = read_attachment(&id).await?;
 
         return Ok((headers, body).into_response());
     }
@@ -37,8 +40,8 @@ pub async fn handle(
     Err(Error::NotFound)
 }
 
-async fn read_attachment(filename: &str) -> Result<Body> {
-    let path = format!("./upload/{filename}");
+async fn read_attachment(id: &str) -> Result<Body> {
+    let path = format!("./upload/{id}");
     let file = File::open(path).await?;
     let body = Body::from_stream(ReaderStream::new(file));
 
