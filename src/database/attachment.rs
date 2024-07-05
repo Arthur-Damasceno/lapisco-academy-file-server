@@ -39,4 +39,15 @@ impl Database {
 
         Ok(())
     }
+
+    pub async fn delete_attachment_by_id(&self, id: &str) -> Result<bool> {
+        let mut conn = self.0.acquire().await?;
+
+        let rows_affected = query!("DELETE FROM attachments WHERE id = ?;", id)
+            .execute(&mut *conn)
+            .await?
+            .rows_affected();
+
+        Ok(rows_affected == 1)
+    }
 }
