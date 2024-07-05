@@ -4,7 +4,7 @@ pub struct Attachment {
     pub id: String,
     #[serde(rename = "n")]
     pub filename: String,
-    #[serde(skip_serializing)]
+    #[serde(rename = "c")]
     pub content_type: String,
 }
 
